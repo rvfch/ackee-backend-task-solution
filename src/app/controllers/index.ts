@@ -23,7 +23,7 @@ export const setAppMessage = (m: appMessage.AppMessage, cb: () => void) => {
 }
 
 export const getAppMessage = <
-  TRequestBody = appMessage.AppMessage['requestBody']
+  TRequestBody = appMessage.AppMessage['requestBody'],
 >() =>
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   als.getStore()!.appMessage! as Omit<appMessage.AppMessage, 'requestBody'> & {
@@ -54,15 +54,16 @@ export const getOasPathAppMessage = <TOpenAPIRoute>() => {
  * for your needs, such as `serviceMeta` below, or special cases like image upload.
  */
 export const service = (
-  serviceHandler: (appMessage: appMessage.AppMessage) => PromiseLike<any>
+  serviceHandler: (appMessage: appMessage.AppMessage) => Promise<any>
 ): RequestHandler =>
-  pipeMiddleware(createAppMessage(), async (req, res, next) => {
-    try {
-      const responseBody = await serviceHandler(getAppMessage())
-      res.json(responseBody)
-    } catch (error) {
-      next(error)
-    }
+  pipeMiddleware(createAppMessage(), (_req, res, next) => {
+    serviceHandler(getAppMessage())
+      .then(responseBody => {
+        res.json(responseBody)
+      })
+      .catch(error => {
+        next(error)
+      })
   })
 
 /**
@@ -71,22 +72,22 @@ export const service = (
 export const serviceMeta = (
   serviceHandler: (
     appMessage: appMessage.AppMessage
-  ) => PromiseLike<{ data: any; meta?: { xTotalCount?: number } }>
+  ) => Promise<{ data: any; meta?: { xTotalCount?: number } }>
 ) =>
-  pipeMiddleware(createAppMessage(), async (req, res, next) => {
-    try {
-      const response = await serviceHandler(getAppMessage())
-      // X-Total-Count
-      if (
-        response.meta?.xTotalCount &&
-        !isNaN(Number(response.meta.xTotalCount))
-      ) {
-        res.set('X-Total-Count', String(response.meta.xTotalCount))
-      }
-      res.json(response.data)
-    } catch (error) {
-      next(error)
-    }
+  pipeMiddleware(createAppMessage(), (_req, res, next) => {
+    serviceHandler(getAppMessage())
+      .then(response => {
+        if (
+          response.meta?.xTotalCount &&
+          !isNaN(Number(response.meta.xTotalCount))
+        ) {
+          res.set('X-Total-Count', String(response.meta.xTotalCount))
+        }
+        res.json(response.data)
+      })
+      .catch(error => {
+        next(error)
+      })
   })
 
 /**
@@ -104,13 +105,15 @@ const pipeMiddleware = (...middlewares: RequestHandler[]) => {
  * in any of next middlewares
  */
 const createAppMessage = (): RequestHandler => {
-  return async (req, res, next) => {
-    try {
-      const m = await appMessage.createFromHttpRequest({ req, res })
-      setAppMessage(m, () => next())
-    } catch (error) {
-      next(error)
-    }
+  return (req, res, next) => {
+    appMessage
+      .createFromHttpRequest({ req, res })
+      .then(m => {
+        setAppMessage(m, () => next())
+      })
+      .catch(error => {
+        next(error)
+      })
   }
 }
 

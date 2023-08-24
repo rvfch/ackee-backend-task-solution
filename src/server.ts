@@ -1,6 +1,6 @@
 import { createServer } from 'unicore'
 import { ctrl } from './app/controllers'
-import pino from 'pino-http';
+import pino from 'pino-http'
 import * as hello from './app/services/helloService'
 
 const server = createServer()
