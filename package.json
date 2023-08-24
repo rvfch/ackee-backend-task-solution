@@ -48,7 +48,8 @@
     "pino-http": "^8.4.0",
     "source-map-support": "^0.5.21",
     "sqlite3": "^5.1.6",
-    "unicore": "^0.6.1"
+    "unicore": "^0.6.1",
+    "zod": "^3.22.2"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.7.0",
