@@ -1,47 +1,178 @@
-openapi: '3.0.2'
+openapi: 3.1.0
 info:
-  title: API Title
-  version: '1.0'
+  title: Problems API
+  version: 1.0.0
+  description: A simple API for creating, reading, updating, and answering riddles and arithmetic problems.
+
 servers:
-  - url: https://api.server.test/v1
+  - url: http://localhost:3000/api/v1
+
 paths:
-  /hello:
+  /problems:
     get:
+      summary: List all problems
+      tags:
+        - Problems
+      security:
+        - basicAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [riddle, math]
+          description: Filter by problem type
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [answered, unanswered]
+          description: Filter by answer status for the authenticated user
       responses:
         '200':
-          description: OK
+          description: A list of problems
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  hello:
-                    type: string
-                  payload:
-                    type: object
+                type: array
+                items:
+                  $ref: '#/components/schemas/Problem'
     post:
+      summary: Create a new problem
+      tags:
+        - Problems
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProblemInput'
+      responses:
+        '201':
+          description: Problem created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /problems/{problemId}:
+    get:
+      summary: Get a specific problem by ID
+      tags:
+        - Problems
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: problemId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details of the problem
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    put:
+      summary: Update a problem
+      tags:
+        - Problems
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: problemId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProblemInput'
+      responses:
+        '200':
+          description: Problem updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete:
+      summary: Delete a problem
+      tags:
+        - Problems
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: problemId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Problem deleted successfully
+
+  /problems/{problemId}/answer:
+    post:
+      summary: Answer a problem
+      tags:
+        - Answers
+      security:
+        - basicAuth: []
+      parameters:
+        - in: path
+          name: problemId
+          required: true
+          schema:
+            type: integer
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                name:
+                answer:
                   type: string
-      parameters:
-        - name: lang
-          in: header
-          schema:
-            type: string
       responses:
         '200':
-          description: OK
+          description: Answer submitted and validated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  hello:
-                    type: string
-                  payload:
-                    type: object
+                  correct:
+                    type: boolean
+
+components:
+  schemas:
+    Problem:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        type:
+          type: string
+          enum: [riddle, math]
+        problem:
+          type: string
+        answer:
+          type: string
+    ProblemInput:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [riddle, math]
+        problem:
+          type: string
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
