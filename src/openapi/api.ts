@@ -3,42 +3,120 @@
  * Do not make direct changes to the file.
  */
 
+
 export interface paths {
-  "/hello": {
+  "/problems": {
+    /** List all problems */
     get: {
+      parameters: {
+        query?: {
+          /** @description Filter by problem type */
+          type?: "riddle" | "math";
+          /** @description Filter by answer status for the authenticated user */
+          status?: "answered" | "unanswered";
+        };
+      };
       responses: {
-        /** OK */
+        /** @description A list of problems */
         200: {
           content: {
-            "application/json": {
-              hello?: string;
-              payload?: { [key: string]: unknown };
-            };
+            "application/json": components["schemas"]["Problem"][];
           };
         };
       };
     };
+    /** Create a new problem */
     post: {
-      parameters: {
-        header: {
-          lang?: string;
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["ProblemInput"];
         };
       };
       responses: {
-        /** OK */
-        200: {
+        /** @description Problem created successfully */
+        201: {
           content: {
-            "application/json": {
-              hello?: string;
-              payload?: { [key: string]: unknown };
-            };
+            "application/json": components["schemas"]["Problem"];
           };
         };
       };
-      requestBody: {
+    };
+  };
+  "/problems/{problemId}": {
+    /** Get a specific problem by ID */
+    get: {
+      parameters: {
+        path: {
+          problemId: number;
+        };
+      };
+      responses: {
+        /** @description Details of the problem */
+        200: {
+          content: {
+            "application/json": components["schemas"]["Problem"];
+          };
+        };
+      };
+    };
+    /** Update a problem */
+    put: {
+      parameters: {
+        path: {
+          problemId: number;
+        };
+      };
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["ProblemInput"];
+        };
+      };
+      responses: {
+        /** @description Problem updated successfully */
+        200: {
+          content: {
+            "application/json": components["schemas"]["Problem"];
+          };
+        };
+      };
+    };
+    /** Delete a problem */
+    delete: {
+      parameters: {
+        path: {
+          problemId: number;
+        };
+      };
+      responses: {
+        /** @description Problem deleted successfully */
+        204: {
+          content: never;
+        };
+      };
+    };
+  };
+  "/problems/{problemId}/answer": {
+    /** Answer a problem */
+    post: {
+      parameters: {
+        path: {
+          problemId: number;
+        };
+      };
+      requestBody?: {
         content: {
           "application/json": {
-            name?: string;
+            answer?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Answer submitted and validated */
+        200: {
+          content: {
+            "application/json": {
+              correct?: boolean;
+            };
           };
         };
       };
@@ -46,8 +124,33 @@ export interface paths {
   };
 }
 
-export interface components {}
+export type webhooks = Record<string, never>;
 
-export interface operations {}
+export interface components {
+  schemas: {
+    Problem: {
+      id?: number;
+      username?: string;
+      /** @enum {string} */
+      type?: "riddle" | "math";
+      problem?: string;
+      answer?: string;
+    };
+    ProblemInput: {
+      /** @enum {string} */
+      type?: "riddle" | "math";
+      problem?: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
+}
 
-export interface external {}
+export type $defs = Record<string, never>;
+
+export type external = Record<string, never>;
+
+export type operations = Record<string, never>;
