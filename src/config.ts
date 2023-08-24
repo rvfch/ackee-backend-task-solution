@@ -7,8 +7,7 @@ const loader = createLoader({
 
 const configSchema = {
   logger: {
-    defaultLevel: loader.custom(x => x as Level)('LOGGER_DEFAULT_LEVEL'),
-    pretty: loader.bool('LOGGER_PRETTY'),
+    level: loader.custom(x => x as Level)('LOGGER_DEFAULT_LEVEL'),
   },
   auth: {
     directBearerAuth: loader.bool('AUTH_DIRECT_BEARER_ENABLED'),

@@ -1,10 +1,10 @@
 import { createServer } from 'unicore'
 import { ctrl } from './app/controllers'
-import logger from './app/logger'
+import pino from 'pino-http';
 import * as hello from './app/services/helloService'
 
 const server = createServer()
-server.use(logger.express)
+server.use(pino())
 server.use(ctrl.json)
 server.use(ctrl.cors)
 server.all('/', ctrl.httpRootHandler)
