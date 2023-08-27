@@ -12,6 +12,7 @@ import * as healthz from './healthz'
 import httpErrorResponder from './httpError'
 import * as openapi from '../../openapi'
 import config from '../../config'
+import { Credentials } from './appMessage'
 
 /** CLS to hold request app message context */
 const als = new asyncHooks.AsyncLocalStorage<{
@@ -36,7 +37,12 @@ export const getAppMessage = <
  *
  * Usage: getOasRouteAppMessage<openapi.paths['/api/v1/users/{id}']>()
  */
-export const getOasPathAppMessage = <TOpenAPIRoute>() => {
+export const getOasPathAppMessage = <TOpenAPIRoute>(): {
+  requestBody: openapi.OpenAPIRouteRequestBody<TOpenAPIRoute>
+  param: openapi.OpenAPIRoutePathParam<TOpenAPIRoute>
+  user: Credentials | undefined
+  locale: string
+} => {
   const { requestBody, param, ...message } = getAppMessage()
   return {
     ...message,

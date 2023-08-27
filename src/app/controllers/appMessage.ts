@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import * as lodash from 'lodash'
-import { NotAuthenticated } from '../errors'
+import { E_CODE, NotAuthenticated } from '../errors'
 
 export interface AppMessage {
   user: Credentials | undefined
@@ -11,7 +11,7 @@ export interface AppMessage {
   requestBody: any
 }
 
-interface Credentials {
+export interface Credentials {
   username: string
   password: string
 }
@@ -30,9 +30,11 @@ const getBasicAuth = (authorizationHeader?: string) => {
 const authenticate = async (credentials?: Credentials) => {
   // Credentials are provided
   if (credentials?.username && credentials?.password) {
+    // Handle user validations...
     return Promise.resolve(credentials)
+  } else {
+    throw new NotAuthenticated(E_CODE.NOT_AUTHENTICATED)
   }
-  return undefined
 }
 
 // const getBearerToken = (authorizationHeader?: string) => {
@@ -54,13 +56,6 @@ const authenticate = async (credentials?: Credentials) => {
 //   return undefined
 // }
 
-const handleAuth = async (user?: Credentials) => {
-  // Validate user existence, validate password, etc.
-  if (!user) {
-    throw new NotAuthenticated()
-  }
-}
-
 export const createFromHttpRequest = async (httpContext: {
   req: Request
   res: Response
@@ -69,7 +64,6 @@ export const createFromHttpRequest = async (httpContext: {
   const user = req.headers.authorization
     ? await authenticate(getBasicAuth(req.headers.authorization))
     : undefined
-  await handleAuth(user)
   return {
     user,
     locale: 'en', // Install i18n to getLocale() from HTTP Request,
