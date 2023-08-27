@@ -1,4 +1,7 @@
 /* tslint:disable:max-classes-per-file */
+
+import logger from '../logger'
+
 /**
  * Standard json error with possibility to add response code
  * @property {string} name Name of it
@@ -19,6 +22,7 @@ export class HttpJsonError extends Error {
     super(message)
     Object.setPrototypeOf(this, new.target.prototype)
     this.name = this.constructor.name
+    logger.error(message)
   }
 
   public toJSON() {
@@ -44,6 +48,17 @@ export class BadRequest extends HttpJsonError {
   }
 }
 
+export class InternalServerError extends HttpJsonError {
+  constructor(data: ErrorData = {}, errorData?: any) {
+    super(
+      500,
+      data.message ?? 'Internal server error',
+      data.code ?? '?',
+      errorData
+    )
+  }
+}
+
 export class NotAuthorized extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
     super(
@@ -58,6 +73,29 @@ export class NotAuthorized extends HttpJsonError {
 export class ValidationError extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
     super(422, data.message ?? 'Invalid data', data.code ?? '?', errorData)
+  }
+}
+
+export class TokenizationError extends HttpJsonError {
+  constructor(data: ErrorData = {}, errorData?: any) {
+    super(
+      500,
+      data.message ?? 'Tokenization error',
+      data.code ?? '?',
+      errorData
+    )
+  }
+}
+
+export class ParseError extends HttpJsonError {
+  constructor(data: ErrorData = {}, errorData?: any) {
+    super(500, data.message ?? 'Parse error', data.code ?? '?', errorData)
+  }
+}
+
+export class EvaluateError extends HttpJsonError {
+  constructor(data: ErrorData = {}, errorData?: any) {
+    super(500, data.message ?? 'Evaluate error', data.code ?? '?', errorData)
   }
 }
 
