@@ -9,7 +9,7 @@ import { executeTxAsync } from '../repos'
 import _ = require('lodash')
 import { ProblemDTO } from '../dto/problemDto'
 
-const EVAL_WORKER_PATH = '../utils/evaluator-worker.js'
+const EVAL_WORKER_PATH = '../utils/evaluatorWorker.js'
 
 const problemsRepo = new ProblemsRepository('problems')
 
