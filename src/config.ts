@@ -25,6 +25,9 @@ const configSchema = {
   riddle: {
     answer: 'Riddle answer',
   },
+  api: {
+    version: 'v1',
+  },
 }
 
 export default values(configSchema)

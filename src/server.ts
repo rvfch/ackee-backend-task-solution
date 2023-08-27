@@ -1,7 +1,7 @@
 import { createRouter, createServer } from 'unicore'
 import { ctrl } from './app/controllers'
 import pino from 'pino-http'
-import * as problem from './app/services/problemService'
+import * as problemService from './app/services/problemService'
 import {
   problemInput,
   problemInputOnlyType,
@@ -9,7 +9,9 @@ import {
 import validate from './app/validators'
 import { idRequired } from './app/validators/idParam'
 import { answerBody } from './app/validators/answerInput'
+import config from './config'
 
+// Create and set up the server
 const server = createServer()
 server.use(pino())
 server.use(ctrl.json)
@@ -17,41 +19,44 @@ server.use(ctrl.cors)
 server.all('/', ctrl.httpRootHandler)
 server.use(ctrl.healthz)
 
-const router = createRouter()
+// Route definitions
+const problemsRouter = createRouter()
 
-router.get(
-  '/problems',
+problemsRouter.get(
+  '/',
   validate({ body: problemInputOnlyType }),
-  ctrl.service(problem.list)
+  ctrl.service(problemService.list)
 )
-router.post(
-  '/problems',
+problemsRouter.post(
+  '/',
   validate({ body: problemInput }),
-  ctrl.service(problem.create)
+  ctrl.service(problemService.create)
 )
-router.get(
-  '/problems/:id',
+problemsRouter.get(
+  '/:id',
   validate({ body: problemInputOnlyType, params: idRequired }),
-  ctrl.service(problem.getOne)
+  ctrl.service(problemService.getOne)
 )
-router.put(
-  '/problems/:id',
+problemsRouter.put(
+  '/:id',
   validate({ body: problemInput, params: idRequired }),
-  ctrl.service(problem.update)
+  ctrl.service(problemService.update)
 )
-router.delete(
-  '/problems/:id',
+problemsRouter.delete(
+  '/:id',
   validate({ params: idRequired }),
-  ctrl.service(problem.destroy)
+  ctrl.service(problemService.destroy)
 )
-router.post(
-  '/problems/:id/answer',
+problemsRouter.post(
+  '/:id/answer',
   validate({ body: answerBody, params: idRequired }),
-  ctrl.service(problem.solve)
+  ctrl.service(problemService.solve)
 )
 
-server.use('/api/v1', router)
+// Use the problems router on the main server instance
+server.use(`/api/${config.api.version}/problems`, problemsRouter)
 
+// Error handling
 server.use(ctrl.httpErrorHandler)
 server.use(ctrl.httpFinalHandler)
 
