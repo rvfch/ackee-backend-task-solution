@@ -30,6 +30,60 @@ describe('Problems Service Test', () => {
           })
         })
     })
+
+    it('should return a list of unanswered problems', () => {
+      const input = {
+        answered: false,
+      }
+      return t
+        .request()
+        .get(`${apiPrefix}/problems`)
+        .set(auth)
+        .send(input)
+        .expect(200)
+        .then(({ body }: any) => {
+          const { payload } = body
+          expect(payload).toEqual(input)
+          expect(body.problems[1]).toMatchSnapshot({
+            created_at: expect.any(String),
+            updated_at: expect.any(String),
+          })
+        })
+    })
+
+    it('should return a list of answered problems', async () => {
+      const id = 1
+      const answerInput = { answer: 'Test answer' }
+      const listInput = {
+        answered: true,
+      }
+
+      // answer the problem with id  1
+      await t
+        .request()
+        .post(`${apiPrefix}/problems/${id}/answer`)
+        .set(auth)
+        .send(answerInput)
+        .expect(200)
+        .then(({ body }: any) => {
+          expect(body.correct).toBeTruthy()
+        })
+
+      return t
+        .request()
+        .get(`${apiPrefix}/problems`)
+        .set(auth)
+        .send(listInput)
+        .expect(200)
+        .then(({ body }: any) => {
+          const { payload } = body
+          expect(payload).toEqual(listInput)
+          expect(body.problems[0]).toMatchSnapshot({
+            created_at: expect.any(String),
+            updated_at: expect.any(String),
+          })
+        })
+    })
   })
 
   describe('GET /problems/:id', () => {
