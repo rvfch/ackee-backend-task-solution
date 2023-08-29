@@ -27,7 +27,9 @@
     "cs:eslint:fix": "npm run cs:eslint:check -- --fix",
     "cs:eclint:check": "eclint check '**/*'",
     "cs:eclint:fix": "eclint fix '**/*'",
-    "check": "npm-check -i app -i errors -i config -i index; exit 0"
+    "check": "npm-check -i app -i errors -i config -i index; exit 0",
+    "migrate": "knex migrate:latest --knexfile src/db/knexfile.ts",
+    "seed": "kex seed:run --knexfile src/db/knexfile.ts"
   },
   "jest-junit": {
     "outputDirectory": "output",
