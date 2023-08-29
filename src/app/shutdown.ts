@@ -1,7 +1,6 @@
 import logger from './logger'
 import server from '../server'
-import { db } from '..'
-
+import db from '../db'
 /**
  * Handles multiple shutdown calls
  */

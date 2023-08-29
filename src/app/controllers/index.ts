@@ -65,6 +65,9 @@ export const service = (
   pipeMiddleware(createAppMessage(), (_req, res, next) => {
     serviceHandler(getAppMessage())
       .then(responseBody => {
+        if (responseBody.statusCode) {
+          res.status(responseBody.statusCode)
+        }
         res.json(responseBody)
       })
       .catch(error => {

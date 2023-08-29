@@ -32,9 +32,8 @@ const authenticate = async (credentials?: Credentials) => {
   if (credentials?.username && credentials?.password) {
     // Handle user validations...
     return Promise.resolve(credentials)
-  } else {
-    throw new NotAuthenticated(E_CODE.NOT_AUTHENTICATED)
   }
+  throw new NotAuthenticated(E_CODE.NOT_AUTHENTICATED)
 }
 
 // const getBearerToken = (authorizationHeader?: string) => {
@@ -61,9 +60,13 @@ export const createFromHttpRequest = async (httpContext: {
   res: Response
 }): Promise<AppMessage> => {
   const { req } = httpContext
+  // Auth for all requests
   const user = req.headers.authorization
     ? await authenticate(getBasicAuth(req.headers.authorization))
     : undefined
+
+  if (!user) throw new NotAuthenticated(E_CODE.NOT_AUTHENTICATED)
+
   return {
     user,
     locale: 'en', // Install i18n to getLocale() from HTTP Request,

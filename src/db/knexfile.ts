@@ -1,59 +1,55 @@
-import { knex, type Knex } from 'knex'
 import path = require('path')
 // Update with your config settings.
 
-const config: { [key: string]: Knex.Config } = {
-  development: {
-    client: 'sqlite3',
-    connection: {
-      filename: path.join(__dirname, '..', '..', 'db.sqlite'),
-    },
-    useNullAsDefault: true,
-    migrations: {
-      directory: './migrations',
-      extension: 'ts',
-    },
-    seeds: {
-      directory: './seeds',
-      extension: 'ts',
-    },
-    debug: true,
+export const development = {
+  client: 'sqlite3',
+  connection: {
+    filename: path.join(__dirname, '..', '..', 'db.sqlite'),
   },
-
-  staging: {
-    client: 'postgresql',
-    connection: {
-      database: 'my_db',
-      user: 'username',
-      password: 'password',
-    },
-    pool: {
-      min: 2,
-      max: 10,
-    },
-    migrations: {
-      tableName: 'knex_migrations',
-    },
+  useNullAsDefault: true,
+  migrations: {
+    directory: './migrations',
+    extension: 'ts',
   },
+  seeds: {
+    directory: './seeds',
+    extension: 'ts',
+  },
+  debug: true,
+}
 
-  production: {
-    client: 'postgresql',
-    connection: {
-      database: 'my_db',
-      user: 'username',
-      password: 'password',
-    },
-    pool: {
-      min: 2,
-      max: 10,
-    },
-    migrations: {
-      tableName: 'knex_migrations',
-    },
+export const production = {
+  client: 'postgresql',
+  connection: {
+    database: 'my_db',
+    user: 'username',
+    password: 'password',
+  },
+  pool: {
+    min: 2,
+    max: 10,
+  },
+  migrations: {
+    tableName: 'knex_migrations',
   },
 }
 
-export const knexInit = () =>
-  knex(config[process.env.NODE_ENV ?? 'development'])
-
-module.exports = { development: config.development, knexInit }
+export const test = {
+  client: 'sqlite3',
+  connection: {
+    filename: './src/test/test.sqlite',
+  },
+  useNullAsDefault: true,
+  pool: {
+    min: 1,
+    max: 1,
+  },
+  migrations: {
+    directory: './src/db/migrations',
+    extension: 'ts',
+  },
+  seeds: {
+    directory: './src/db/seeds',
+    extension: 'ts',
+  },
+}

@@ -12,7 +12,8 @@ import { answerBody } from './app/validators/answerInput'
 import config from './config'
 
 // Create and set up the server
-const server = createServer()
+export const server = createServer()
+
 server.use(pino())
 server.use(ctrl.json)
 server.use(ctrl.cors)

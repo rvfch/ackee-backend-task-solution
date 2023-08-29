@@ -1,5 +1,6 @@
 /* tslint:disable:max-classes-per-file */
 
+import { HttpStatus } from '../constants/http-status-code'
 import logger from '../logger'
 
 /**
@@ -44,7 +45,12 @@ interface ErrorData {
 
 export class BadRequest extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
-    super(400, data.message ?? 'Client error', data.code ?? '?', errorData)
+    super(
+      HttpStatus.BAD_REQUEST,
+      data.message ?? 'Client error',
+      data.code ?? '?',
+      errorData
+    )
   }
 }
 
@@ -62,7 +68,7 @@ export class InternalServerError extends HttpJsonError {
 export class NotAuthorized extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
     super(
-      403,
+      HttpStatus.UNAUTHORIZED,
       data.message ?? 'Insufficient aceess',
       data.code ?? '?',
       errorData
@@ -72,14 +78,19 @@ export class NotAuthorized extends HttpJsonError {
 
 export class ValidationError extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
-    super(422, data.message ?? 'Invalid data', data.code ?? '?', errorData)
+    super(
+      HttpStatus.UNPROCESSABLE_ENTITY,
+      data.message ?? 'Invalid data',
+      data.code ?? '?',
+      errorData
+    )
   }
 }
 
 export class TokenizationError extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
     super(
-      500,
+      HttpStatus.INTERNAL_SERVER_ERROR,
       data.message ?? 'Tokenization error',
       data.code ?? '?',
       errorData
@@ -89,20 +100,30 @@ export class TokenizationError extends HttpJsonError {
 
 export class ParseError extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
-    super(500, data.message ?? 'Parse error', data.code ?? '?', errorData)
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      data.message ?? 'Parse error',
+      data.code ?? '?',
+      errorData
+    )
   }
 }
 
 export class EvaluateError extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
-    super(500, data.message ?? 'Evaluate error', data.code ?? '?', errorData)
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      data.message ?? 'Evaluate error',
+      data.code ?? '?',
+      errorData
+    )
   }
 }
 
 export class NotAuthenticated extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
     super(
-      401,
+      HttpStatus.UNAUTHORIZED,
       data.message ?? 'Requires authentication',
       data.code ?? '?',
       errorData
@@ -113,7 +134,7 @@ export class NotAuthenticated extends HttpJsonError {
 export class NotFound extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
     super(
-      404,
+      HttpStatus.NOT_FOUND,
       data.message ?? 'Resource not found',
       data.code ?? '?',
       errorData
@@ -123,6 +144,11 @@ export class NotFound extends HttpJsonError {
 
 export class ServerError extends HttpJsonError {
   constructor(data: ErrorData = {}, errorData?: any) {
-    super(500, data.message ?? 'Server error', data.code ?? '?', errorData)
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      data.message ?? 'Server error',
+      data.code ?? '?',
+      errorData
+    )
   }
 }

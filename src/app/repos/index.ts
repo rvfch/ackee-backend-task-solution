@@ -1,13 +1,20 @@
 import { Knex } from 'knex'
-import { db } from '../..'
+import db from '../../db'
 import { InternalServerError } from '../errors'
+import { isString } from 'lodash'
 
-export interface Readable<T> {
-  findMany: (model: Partial<T>) => Promise<T[]>
-  findOne: (id: number | Partial<T>) => Promise<T>
+interface Readable<T> {
+  findMany: <U extends keyof T = keyof T>(
+    model: Partial<T>,
+    fieldsToExclude?: U[]
+  ) => Promise<Array<Omit<T, U>>>
+  findOne: <U extends keyof T = keyof T>(
+    id: number | Partial<T>,
+    fieldsToExclude?: U[]
+  ) => Promise<Omit<T, U>>
 }
 
-export interface Writable<T> {
+interface Writable<T> {
   create: (entity: Entity<T>, trx: Knex.Transaction) => Promise<T>
   update: (id: number, item: Partial<T>, trx: Knex.Transaction) => Promise<T>
   delete: (id: number, trx: Knex.Transaction) => Promise<boolean>
@@ -30,12 +37,32 @@ export abstract class BaseRepository<T> implements Model<T> {
     return ['*']
   }
 
-  findMany(entity: Partial<T>): Promise<T[]> {
-    return this.qb.select(this.returningColumns).where(entity)
+  findMany<U extends keyof T = keyof T>(
+    entity: Partial<T>,
+    fieldsToExclude?: U[]
+  ): Promise<T[]> {
+    const columnsToSelect = fieldsToExclude
+      ? this.returningColumns.filter(col => !fieldsToExclude.includes(col as U))
+      : this.returningColumns
+
+    return this.qb.select(columnsToSelect).where(entity)
   }
 
-  findOne(id: number | Partial<T>): Promise<T> {
-    return this.qb.select(this.returningColumns).where('id', id).first()
+  findOne<U extends keyof T = keyof T>(
+    id: number | Partial<T>,
+    fieldsToExclude?: U[]
+  ): Promise<T> {
+    const columnsToSelect = fieldsToExclude
+      ? this.returningColumns.filter(
+          column => !fieldsToExclude.includes(column as U)
+        )
+      : this.returningColumns
+
+    if (!isString(id)) {
+      return this.qb.select(columnsToSelect).where('id', id).first()
+    } else {
+      return this.qb.select(columnsToSelect).where(id).first()
+    }
   }
 
   async create(entity: Entity<T>, trx: Knex.Transaction): Promise<T> {
@@ -43,6 +70,7 @@ export abstract class BaseRepository<T> implements Model<T> {
       .transacting(trx)
       .insert<T>(entity)
       .returning(this.returningColumns)
+
     return output as Promise<T>
   }
 
@@ -53,9 +81,10 @@ export abstract class BaseRepository<T> implements Model<T> {
   ): Promise<T> {
     const [output] = await this.qb
       .transacting(trx)
-      .where(id)
-      .update(entity)
+      .where('id', id)
+      .update<T>(entity)
       .returning(this.returningColumns)
+
     return output as Promise<T>
   }
 

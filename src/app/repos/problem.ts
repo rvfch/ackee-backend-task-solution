@@ -11,8 +11,22 @@ export interface Timestamps {
   updated_at: string
 }
 
-export type Problem = openapi.api.components['schemas']['Problem']
+export type Problem = openapi.api.components['schemas']['FullProblem'] &
+  Timestamps
 
-export type ProblemWithTimestamps = Problem & Timestamps
+export type ProblemWithoutAnswer =
+  openapi.api.components['schemas']['Problem'] & Timestamps
 
-export class ProblemsRepository extends BaseRepository<ProblemWithTimestamps> {}
+export class ProblemsRepository extends BaseRepository<Problem> {
+  protected get returningColumns(): string[] {
+    return [
+      'id',
+      'problem',
+      'type',
+      'answer',
+      'author',
+      'created_at',
+      'updated_at',
+    ]
+  }
+}
