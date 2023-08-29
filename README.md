@@ -1,30 +1,35 @@
 <div align="center">
 
-# Node template
+# Ackee Backend Task Solution
 
-[![Build Status](https://img.shields.io/travis/com/AckeeCZ/node-template/master.svg?style=flat-square)](https://travis-ci.com/AckeeCZ/node-template)
-[![Coverage](https://img.shields.io/codeclimate/coverage/AckeeCZ/node-template.svg?style=flat-square)](https://codeclimate.com/github/AckeeCZ/node-template)
-[![Maintainability](https://img.shields.io/codeclimate/maintainability/AckeeCZ/node-template.svg?style=flat-square)](https://codeclimate.com/github/AckeeCZ/node-template)
-[![Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/AckeeCZ/node-template.svg?style=flat-square)](https://snyk.io/test/github/AckeeCZ/node-template?targetFile=package.json)
-[![Dependency Status](https://img.shields.io/david/AckeeCZ/node-template.svg?style=flat-square)](https://david-dm.org/AckeeCZ/node-template)
-[![Dev Dependency Status](https://img.shields.io/david/dev/AckeeCZ/node-template.svg?style=flat-square)](https://david-dm.org/AckeeCZ/node-template?type=dev)
 
-Ackee node back-end project template
+Assignment can be found here [here](https://github.com/AckeeCZ/cookbook-api-task)
 
 </div>
 
 ## 🚀 Quick-start
 
+- `npm i -g knex`
 - `npm install`
+- `npm run migrate` (after successful migration optionally `npm run seed`)
+- `npm run build:docs`
 - `npm run build`
-- `npm start`
-- Visit [`http://localhost:3000/`](http://localhost:3000/), [`/healthz`](http://localhost:3000/healthz) or [`/api/hello`](http://localhost:3000/api/hello)
-
-## 📒 Further reading
-
-- [Getting started](./docs/getting-started.md)
-- TODO App layers description
+- `npm test` to ensure, that all tests are passing
+- `npm run start` or `npm run start-lr` for live reload
+- Swagger API documentation can be found here: [`http://localhost:3000/api/v1`](http://localhost:3000/)
+- Health check route: [`/healthz`](http://localhost:3000/healthz)
+- Use postman (or any other client app) to use API
+- Use Basic Auth to authenticate
+## ✨ Used technologies
+- Node.js with Express (Unicore) onboard
+- SQLite3 for storing data
+- Knex (for SQL queries)
+- Piscina (for multi-threading)
+- Zod (for validations)
+- OpenAPI & Swagger (for API documentation)
+- Jest for testing
 
 ## ⚖️ License
+Created using [Ackee node-template](https://github.com/AckeeCZ/node-template/tree/master/src)
 
 This project is published under [MIT license](./LICENSE).
