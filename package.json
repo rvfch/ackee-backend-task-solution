@@ -1,7 +1,7 @@
 {
   "name": "ackee-backend-task-solution",
   "description": "ackee-backend-task-solution",
-  "version": "1.0.0-DEV",
+  "version": "1.2.0-DEV",
   "author": "Roman Filatov <rvfchdev@gmail.com>",
   "contributors": [
     "Jaroslav Šmolík <grissius@gmail.com>",
@@ -49,7 +49,10 @@
     "piscina": "^4.1.0",
     "source-map-support": "^0.5.21",
     "sqlite3": "^5.1.6",
+    "swagger-ui": "^5.4.2",
+    "swagger-ui-express": "^5.0.0",
     "unicore": "^0.6.1",
+    "yaml": "^2.3.2",
     "zod": "^3.22.2"
   },
   "devDependencies": {
@@ -58,9 +61,11 @@
     "@types/jest": "^29.5.4",
     "@types/knex": "^0.16.1",
     "@types/lodash": "^4.14.197",
-    "@types/node": "^20.5.4",
+    "@types/node": "^20.5.7",
     "@types/sqlite3": "^3.1.8",
     "@types/supertest-as-promised": "^2.0.38",
+    "@types/swagger-ui-express": "^4.1.3",
+    "@types/yaml": "^1.9.7",
     "concurrently": "^8.2.1",
     "cross-env": "^7.0.3",
     "eclint": "^2.8.1",
