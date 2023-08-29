@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Problems API
-  version: 1.1.0
+  version: 1.1.1
   description: A simple API for creating, reading, updating, and answering riddles and arithmetic problems.
 
 servers:
@@ -186,7 +186,7 @@ paths:
 
 components:
   schemas:
-    Problem:
+    FullProblem:
       type: object
       properties:
         id:
@@ -200,6 +200,19 @@ components:
           type: string
         answer:
           type: string
+          readOnly: true
+    Problem:
+      type: object
+      properties:
+        id:
+          type: integer
+        author:
+          type: string
+        type:
+          type: string
+          enum: [riddle, math]
+        problem:
+          type: string
     ProblemInput:
       type: object
       required:
@@ -210,6 +223,8 @@ components:
           type: string
           enum: [riddle, math]
         problem:
+          type: string
+        answer:
           type: string
   securitySchemes:
     basicAuth:

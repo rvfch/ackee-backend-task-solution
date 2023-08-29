@@ -157,7 +157,7 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    Problem: {
+    FullProblem: {
       id?: number;
       author?: string;
       /** @enum {string} */
@@ -165,10 +165,18 @@ export interface components {
       problem?: string;
       answer?: string;
     };
+    Problem: {
+      id?: number;
+      author?: string;
+      /** @enum {string} */
+      type?: "riddle" | "math";
+      problem?: string;
+    };
     ProblemInput: {
       /** @enum {string} */
       type: "riddle" | "math";
       problem: string;
+      answer?: string;
     };
   };
   responses: never;
