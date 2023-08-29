@@ -1,5 +1,12 @@
 version: '3.8'
 services:
-  postgres:
+  sqlite3:
+    image: nouchka/sqlite3
+    stdin_open: true
+    tty: true
     ports:
-      - 5432:5432
+      - '9000:9000'
+    restart: unless-stopped
+    environment:
+      - SQLITE_HOST=sqlite3
+      - SQLITE_PORT=9000

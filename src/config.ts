@@ -11,6 +11,7 @@ const configSchema = {
   },
   auth: {
     directBearerAuth: loader.bool('AUTH_DIRECT_BEARER_ENABLED'),
+    directBasicAuth: loader.bool('AUTH_DIRECT_BASIC_ENABLED'),
   },
   enableTests: loader.bool('ENABLE_TESTS'),
   node: {
