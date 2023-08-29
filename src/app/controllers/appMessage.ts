@@ -3,7 +3,7 @@ import * as lodash from 'lodash'
 import { E_CODE, NotAuthenticated } from '../errors'
 
 export interface AppMessage {
-  user: Credentials | undefined
+  user: Credentials
   locale: string
   param: {
     [key: string]: string

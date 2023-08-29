@@ -40,7 +40,7 @@ export const getAppMessage = <
 export const getOasPathAppMessage = <TOpenAPIRoute>(): {
   requestBody: openapi.OpenAPIRouteRequestBody<TOpenAPIRoute>
   param: openapi.OpenAPIRoutePathParam<TOpenAPIRoute>
-  user: Credentials | undefined
+  user: Credentials
   locale: string
 } => {
   const { requestBody, param, ...message } = getAppMessage()
