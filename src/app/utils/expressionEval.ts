@@ -1,5 +1,10 @@
 import { E_CODE, EvaluateError, ParseError, TokenizationError } from '../errors'
 
+import { performance } from 'node:perf_hooks'
+import logger from '../logger'
+import config from '../../config'
+
+// Enums representing different token types, operators, and parentheses types.
 export enum TokenType {
   NUM = 'NUMBER',
   OP = 'OPERATOR',
@@ -17,6 +22,10 @@ export enum Parens {
   OPEN = '(',
   CLOSE = ')',
 }
+
+// Interfaces to represent the structure of tokens and AST nodes.
+// More info about Abstract Syntax Tree is here:
+// https://en.wikipedia.org/wiki/Abstract_syntax_tree
 
 export interface Token {
   type: TokenType
@@ -46,6 +55,9 @@ export interface LiteralNode {
   value: number
 }
 
+/**
+ * Tokenizer class responsible for breaking down the expression into meaningful tokens.
+ */
 export class Tokenizer {
   private readonly expression: string
   private pos = 0
@@ -56,10 +68,12 @@ export class Tokenizer {
     this.expression = expression.trim()
   }
 
+  // Current char
   private peek(): string {
     return this.expression[this.pos]
   }
 
+  // Next char
   private consume(): string {
     return this.expression[this.pos++]
   }
@@ -113,6 +127,13 @@ export class Tokenizer {
   }
 }
 
+/**
+ * Parser class responsible for building the AST from the tokens.
+ * Implemented inspired by Pratt Parser
+ * More info can be found here:
+ * https://abarker.github.io/typped/pratt_parsing_intro.html
+ */
+
 export class Parser {
   private readonly tokens: Token[]
   private pos = 0
@@ -131,6 +152,7 @@ export class Parser {
     this.init()
   }
 
+  // Initialize prefix and infix parse functions
   private init(): void {
     this.prefixParseFns[TokenType.NUM] = this.parseNumberLiteral.bind(this)
     this.prefixParseFns[Operators.SUBTRACT] =
@@ -141,21 +163,24 @@ export class Parser {
     }
 
     this.prefixParseFns[Parens.OPEN] = this.parseGroupedExpression.bind(this)
-    // this.prefixParseFns[TokenType.PAREN] = this.parseParenthesis.bind(this)
   }
 
+  // Current char
   private peek(): Token {
     return this.tokens[this.pos]
   }
 
+  // Next char
   private consume(): Token {
     return this.tokens[this.pos++]
   }
 
+  // Parse number
   private parseNumberLiteral(): LiteralNode {
     return { type: 'Literal', value: Number(this.consume().value) }
   }
 
+  // Prase prefix
   private parsePrefixExpression(): PrefixExpressionNode {
     const token = this.consume()
     const rightExpression = this.parseExpression(this.precedences.PREFIX) // Use the higher precedence
@@ -166,6 +191,7 @@ export class Parser {
     }
   }
 
+  // Parse an infix expression
   private parseInfixExpression(left: Node): BinaryExpressionNode {
     const token = this.consume()
     const precedence = this.precedences[token.value as Operators]
@@ -177,6 +203,7 @@ export class Parser {
     }
   }
 
+  // Main function to parse an expression into its AST representation
   public parseExpression(precedence = 0): Node {
     const prefixFn =
       this.prefixParseFns[
@@ -204,19 +231,7 @@ export class Parser {
     return left
   }
 
-  // private parseParenthesis(): Node {
-  //   const token = this.peek()
-
-  //   if (token.value === Parens.OPEN) {
-  //     return this.parseGroupedExpression()
-  //   }
-
-  //   throw new ParseError({
-  //     message: `Unhandled parenthesis: ${token.value}`,
-  //     code: E_CODE.PARSE_ERROR.code,
-  //   })
-  // }
-
+  // Parse an expression enclosed in parentheses
   private parseGroupedExpression(): Node {
     this.consume() // consume the opening parenthesis
     const expression = this.parseExpression()
@@ -231,7 +246,11 @@ export class Parser {
   }
 }
 
+/**
+ * Evaluator class to evaluate the AST and return the result.
+ */
 export class Evaluator {
+  // Evaluate a node based on its type
   public evaluate(node: Node): number {
     switch (node.type) {
       case 'BinaryExpression':
@@ -249,6 +268,7 @@ export class Evaluator {
     }
   }
 
+  // Evaluate a binary expression (addition, subtraction, etc.)
   private evaluateBinaryExpression(node: BinaryExpressionNode): number {
     const leftValue = this.evaluate(node.left)
     const rightValue = this.evaluate(node.right)
@@ -276,6 +296,7 @@ export class Evaluator {
     }
   }
 
+  // Evaluate a prefix expression (negative numbers)
   private evaluatePrefixExpression(node: PrefixExpressionNode): number {
     const rightValue = this.evaluate(node.right)
     if (node.op === Operators.SUBTRACT) {
@@ -288,9 +309,29 @@ export class Evaluator {
   }
 }
 
+/**
+ * Main evaluation function.
+ * Takes an expression string, tokenizes it, parses it into an AST, evaluates it, and returns the result.
+ */
 export const evaluate = (expression: string): number => {
   expression = expression.trim().replace(/\s/g, '')
+
+  const isDev = config.node.env === 'development'
+
+  let startTime = performance.now()
   const tokens = new Tokenizer(expression).tokenize()
+  let endTime = performance.now()
+  if (isDev) logger.info(`Tokenize took ${endTime - startTime} ms.`)
+
+  startTime = performance.now()
   const ast = new Parser(tokens).parseExpression()
-  return new Evaluator().evaluate(ast)
+  endTime = performance.now()
+  if (isDev) logger.info(`ParseExpression took ${endTime - startTime} ms.`)
+
+  startTime = performance.now()
+  const result = new Evaluator().evaluate(ast)
+  endTime = performance.now()
+  if (isDev) logger.info(`Evaluate took ${endTime - startTime} ms.`)
+
+  return result
 }
