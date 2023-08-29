@@ -3,6 +3,7 @@ import db from '../../db'
 import { InternalServerError } from '../errors'
 import { isString } from 'lodash'
 
+// CRUD operations
 interface Readable<T> {
   findMany: <U extends keyof T = keyof T>(
     model: Partial<T>,
@@ -26,18 +27,26 @@ type BaseFields = 'id' | 'created_at' | 'updated_at'
 
 type Entity<T> = Omit<T, BaseFields>
 
+/**
+ * Base repository class that implements the Model interface
+ * @param tableName Name of the table in the database
+ * @param COLUMNS Array of columns that are present in the table
+ * @param returningColumns Array of columns that should be returned when a query is executed
+ */
 export abstract class BaseRepository<T> implements Model<T> {
+  protected readonly COLUMNS: string[] = ['*']
+
   constructor(private readonly tableName: string) {}
 
-  public get qb(): Knex.QueryBuilder {
+  private get qb(): Knex.QueryBuilder {
     return db(this.tableName)
   }
 
   protected get returningColumns(): string[] {
-    return ['*']
+    return this.COLUMNS
   }
 
-  findMany<U extends keyof T = keyof T>(
+  public findMany<U extends keyof T = keyof T>(
     entity: Partial<T>,
     fieldsToExclude?: U[]
   ): Promise<T[]> {
@@ -45,10 +54,10 @@ export abstract class BaseRepository<T> implements Model<T> {
       ? this.returningColumns.filter(col => !fieldsToExclude.includes(col as U))
       : this.returningColumns
 
-    return this.qb.select(columnsToSelect).where(entity)
+    return this.qb.select(columnsToSelect).where(this.clean(entity))
   }
 
-  findOne<U extends keyof T = keyof T>(
+  public findOne<U extends keyof T = keyof T>(
     id: number | Partial<T>,
     fieldsToExclude?: U[]
   ): Promise<T> {
@@ -65,7 +74,7 @@ export abstract class BaseRepository<T> implements Model<T> {
     }
   }
 
-  async create(entity: Entity<T>, trx: Knex.Transaction): Promise<T> {
+  public async create(entity: Entity<T>, trx: Knex.Transaction): Promise<T> {
     const [output] = await this.qb
       .transacting(trx)
       .insert<T>(entity)
@@ -74,7 +83,7 @@ export abstract class BaseRepository<T> implements Model<T> {
     return output as Promise<T>
   }
 
-  async update(
+  public async update(
     id: number,
     entity: Partial<Entity<T>>,
     trx: Knex.Transaction
@@ -90,6 +99,20 @@ export abstract class BaseRepository<T> implements Model<T> {
 
   async delete(id: number, trx: Knex.Transaction): Promise<boolean> {
     return this.qb.transacting(trx).where('id', id).del()
+  }
+
+  /**
+   * Function to clean the entity object and return only the columns that are present in the COLUMNS array
+   */
+  private clean<T>(entity: Partial<T>): Partial<T> {
+    const entityKeys = Object.keys(entity)
+    const result: Partial<T> = {}
+    entityKeys.forEach(key => {
+      if (this.COLUMNS.includes(key)) {
+        result[key as keyof T] = entity[key as keyof T]
+      }
+    })
+    return result
   }
 }
 

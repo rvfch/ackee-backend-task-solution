@@ -17,16 +17,17 @@ export type Problem = openapi.api.components['schemas']['FullProblem'] &
 export type ProblemWithoutAnswer =
   openapi.api.components['schemas']['Problem'] & Timestamps
 
+/**
+ * Repository class for the problems entity
+ */
 export class ProblemsRepository extends BaseRepository<Problem> {
-  protected get returningColumns(): string[] {
-    return [
-      'id',
-      'problem',
-      'type',
-      'answer',
-      'author',
-      'created_at',
-      'updated_at',
-    ]
-  }
+  protected readonly COLUMNS = [
+    'id',
+    'problem',
+    'type',
+    'answer',
+    'author',
+    'created_at',
+    'updated_at',
+  ]
 }

@@ -4,6 +4,7 @@ import pino from 'pino-http'
 import * as problemService from './app/services/problemService'
 import {
   problemInput,
+  problemInputFilter,
   problemInputOnlyType,
 } from './app/validators/problemInput'
 import validate from './app/validators'
@@ -25,7 +26,7 @@ const problemsRouter = createRouter()
 
 problemsRouter.get(
   '/',
-  validate({ body: problemInputOnlyType }),
+  validate({ body: problemInputFilter }),
   ctrl.service(problemService.list)
 )
 problemsRouter.post(

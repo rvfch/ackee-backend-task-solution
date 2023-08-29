@@ -19,3 +19,12 @@ export const problemInputOnlyType = z.object({
     })
     .optional(),
 })
+
+export const problemInputAnswered = z.object({
+  answered: z.boolean().optional(),
+})
+
+export const problemInputFilter = z.intersection(
+  problemInputOnlyType,
+  problemInputAnswered
+)

@@ -29,6 +29,10 @@ const EVAL_WORKER_PATH = path.resolve(
 )
 const problemsRepo = new ProblemsRepository('problems')
 
+// Use in-memory storage for current user answers :)
+// username -> set of problem IDs
+const userAnswers: Record<string, Set<number>> = {}
+
 /**
  * Lists all the problems
  */
@@ -38,7 +42,7 @@ export const list = async (): Promise<
   const message = ctrl.getOasPathAppMessage<openapi.api.paths['/problems']>()
 
   // Retrieve problems while omitting their answers
-  const problems: ProblemWithoutAnswer[] = await problemsRepo.findMany(
+  let problems: ProblemWithoutAnswer[] = await problemsRepo.findMany(
     message.requestBody,
     ['answer']
   )
@@ -50,6 +54,9 @@ export const list = async (): Promise<
       code: E_CODE.INTERNAL_SERVER_ERROR.code,
     })
   }
+
+  // Filter by answered (if provided)
+  problems = await handleAnsweredFilter(message, problems)
 
   return Promise.resolve({
     statusCode: HttpStatus.OK,
@@ -68,7 +75,7 @@ export const create = async (): Promise<
 
   const dto = {
     ...message.requestBody,
-    author: message.user?.username,
+    author: message.user.username,
     answer: message.requestBody.answer ?? undefined,
   }
 
@@ -167,7 +174,7 @@ export const destroy = async (): Promise<
     problemsRepo.delete(message.param.id, trx)
   )
 
-  if (!result) {
+  if (_.isUndefined(result) || !result) {
     throw new NotFound({
       message: `Problem ${message.param.id} not found`,
       code: E_CODE.NOT_FOUND.code,
@@ -191,12 +198,19 @@ export const solve = async (): Promise<
 
   const problem: Problem = await problemsRepo.findOne(message.param.id)
 
-  if (problem) {
-    return Promise.resolve({
-      statusCode: HttpStatus.OK,
-      correct: problem.answer === message.requestBody.answer,
-      payload: message.requestBody,
-    })
+  if (problem?.id) {
+    const isCorrect = problem.answer === message.requestBody.answer
+    // if answer is correct
+    if (isCorrect) {
+      // add problem ID to the set of answered problems
+      await addAnsweredProblem(message, problem)
+
+      return Promise.resolve({
+        statusCode: HttpStatus.OK,
+        correct: isCorrect,
+        payload: message.requestBody,
+      })
+    }
   }
 
   throw new NotFound({
@@ -247,6 +261,9 @@ const authorizeProblem = async <TOpenAPIRoute>(
   }
 }
 
+/**
+ * Method to process a problem based on its type MATH or RIDDLE and evalute or set the correct answer
+ */
 const processByProblemType = async (
   dto: Partial<Problem>
 ): Promise<Problem> => {
@@ -265,4 +282,34 @@ const processByProblemType = async (
       dto.answer = dto.answer ?? config.riddle.answer
   }
   return dto as Problem
+}
+
+const handleAnsweredFilter = async (
+  message: any,
+  problems: Problem[]
+): Promise<Problem[]> => {
+  if (!_.isUndefined(message.requestBody?.answered)) {
+    const answeredProblems =
+      userAnswers[message.user.username] ?? new Set<number>()
+    if (message.requestBody.answered) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return _.filter(problems, p => answeredProblems.has(p.id!))
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return _.filter(problems, p => !answeredProblems.has(p.id!))
+    }
+  }
+  // return unfiltered problems, if answered field is not provided
+  return problems
+}
+
+const addAnsweredProblem = async (
+  message: any,
+  problem: Problem
+): Promise<void> => {
+  if (!userAnswers[message.user.username]) {
+    userAnswers[message.user.username] = new Set<number>()
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  userAnswers[message.user.username].add(problem.id!)
 }
