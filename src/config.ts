@@ -1,4 +1,5 @@
 import { createLoader, safeValues, values } from 'configuru'
+import path = require('path')
 import { Level } from 'pino'
 
 const loader = createLoader({
@@ -28,6 +29,8 @@ const configSchema = {
   },
   api: {
     version: 'v1',
+    swagger: true,
+    docsPath: path.resolve(__dirname, '../docs/api/openapi.yaml'),
   },
 }
 

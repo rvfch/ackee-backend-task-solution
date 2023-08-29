@@ -11,6 +11,11 @@ import validate from './app/validators'
 import { idRequired } from './app/validators/idParam'
 import { answerBody } from './app/validators/answerInput'
 import config from './config'
+import { serve, setup } from 'swagger-ui-express'
+import * as fs from 'fs'
+import * as YAML from 'yaml'
+
+const docsFile = fs.readFileSync(config.api.docsPath, 'utf8')
 
 // Create and set up the server
 export const server = createServer()
@@ -56,6 +61,11 @@ problemsRouter.post(
 )
 
 // Use the problems router on the main server instance
+// Swagger
+if (config.api.swagger) {
+  server.use(`/api/${config.api.version}`, serve)
+  server.get(`/api/${config.api.version}`, setup(YAML.parse(docsFile)))
+}
 server.use(`/api/${config.api.version}/problems`, problemsRouter)
 
 // Error handling
