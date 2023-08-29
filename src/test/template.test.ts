@@ -48,32 +48,11 @@ describe('Template (System)', () => {
           .request()
           .get('/healthz')
           // Default healthz fails deliberately to remind replacement with real impl.
-          .expect(500)
+          .expect(200)
           .then(({ body }: any) => {
             expect(body.tldr).toMatchSnapshot()
           })
       )
-    })
-  })
-  describe('Hello', () => {
-    test('Hello', () => {
-      const input = {
-        a: 1,
-      }
-      return t
-        .request()
-        .post('/hello')
-        .send(input)
-        .expect(200)
-        .then(({ body }: any) => {
-          const { payload, ...rest } = body
-          expect(payload).toEqual(input)
-          expect(rest).toMatchInlineSnapshot(`
-            Object {
-              "hello": "World",
-            }
-          `)
-        })
     })
   })
 })

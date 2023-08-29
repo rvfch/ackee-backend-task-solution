@@ -1,6 +1,6 @@
 import logger from './logger'
 import server from '../server'
-
+import db from '../db'
 /**
  * Handles multiple shutdown calls
  */
@@ -14,54 +14,50 @@ let shuttingDown = false
  *  1 - caused by uncaught exception
  *  2 - error during graceful shutdown
  */
-const shutdown = (event: string, force = false, exitCode = 0) => async ({
-  error,
-  signal,
-}: {
-  error?: Error
-  signal?: NodeJS.Signals
-}) => {
-  logger.info(`Shutdown called! Event: ${event}, with exit code: ${exitCode}`)
+const shutdown =
+  (event: string, force = false, exitCode = 0) =>
+  async ({ error, signal }: { error?: Error; signal?: NodeJS.Signals }) => {
+    logger.info(`Shutdown called! Event: ${event}, with exit code: ${exitCode}`)
 
-  if (!error && !signal) return
+    if (!error && !signal) return
 
-  if (error) {
-    logger.error(error)
-    process.exit(exitCode)
+    if (error) {
+      logger.error(error)
+      process.exit(exitCode)
+    }
+    if (signal && !['SIGINT', 'SIGTERM'].includes(signal)) {
+      logger.error({ signal })
+      process.exit(exitCode)
+    }
+
+    if (force) {
+      process.exit(exitCode)
+    }
+
+    if (shuttingDown) {
+      return
+    }
+
+    shuttingDown = true
+
+    try {
+      // Shutdown HTTP server
+      await server.destroy()
+      // Close connections to Databases etc.
+      await Promise.all([
+        db.destroy(),
+        //   redis.quit().catch((error: any) => {
+        //     logger.error(error)
+        //     redis.disconnect()
+        //   }),
+      ])
+      logger.flush()
+    } catch (error) {
+      logger.error(error)
+      process.exit(2)
+    }
+    logger.info('Server shutdown gracefully')
   }
-  if (signal && !['SIGINT', 'SIGTERM'].includes(signal)) {
-    logger.error({ signal })
-    process.exit(exitCode)
-  }
-
-  if (force) {
-    process.exit(exitCode)
-  }
-
-  if (shuttingDown) {
-    return
-  }
-
-  shuttingDown = true
-
-  try {
-    // Shutdown HTTP server
-    await server.destroy()
-    // Close connections to Databases etc.
-    await Promise.all([
-      //   knex.destroy(),
-      //   redis.quit().catch((error: any) => {
-      //     logger.error(error)
-      //     redis.disconnect()
-      //   }),
-    ])
-    logger.flush()
-  } catch (error) {
-    logger.error(error)
-    process.exit(2)
-  }
-  logger.info('Server shutdown gracefully')
-}
 
 export const prepareForGracefulShutdown = () => {
   process.on('uncaughtException', error => {

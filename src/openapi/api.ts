@@ -20,14 +20,19 @@ export interface paths {
         /** @description A list of problems */
         200: {
           content: {
-            "application/json": components["schemas"]["Problem"][];
+            "application/json": {
+              problems?: components["schemas"]["Problem"][];
+              payload?: {
+                [key: string]: unknown;
+              };
+            };
           };
         };
       };
     };
     /** Create a new problem */
     post: {
-      requestBody?: {
+      requestBody: {
         content: {
           "application/json": components["schemas"]["ProblemInput"];
         };
@@ -36,25 +41,35 @@ export interface paths {
         /** @description Problem created successfully */
         201: {
           content: {
-            "application/json": components["schemas"]["Problem"];
+            "application/json": {
+              problem?: components["schemas"]["Problem"];
+              payload?: {
+                [key: string]: unknown;
+              };
+            };
           };
         };
       };
     };
   };
-  "/problems/{problemId}": {
+  "/problems/{id}": {
     /** Get a specific problem by ID */
     get: {
       parameters: {
         path: {
-          problemId: number;
+          id: number;
         };
       };
       responses: {
         /** @description Details of the problem */
         200: {
           content: {
-            "application/json": components["schemas"]["Problem"];
+            "application/json": {
+              problem?: components["schemas"]["Problem"];
+              payload?: {
+                [key: string]: unknown;
+              };
+            };
           };
         };
       };
@@ -63,10 +78,10 @@ export interface paths {
     put: {
       parameters: {
         path: {
-          problemId: number;
+          id: number;
         };
       };
-      requestBody?: {
+      requestBody: {
         content: {
           "application/json": components["schemas"]["ProblemInput"];
         };
@@ -75,7 +90,12 @@ export interface paths {
         /** @description Problem updated successfully */
         200: {
           content: {
-            "application/json": components["schemas"]["Problem"];
+            "application/json": {
+              problem?: components["schemas"]["Problem"];
+              payload?: {
+                [key: string]: unknown;
+              };
+            };
           };
         };
       };
@@ -84,26 +104,32 @@ export interface paths {
     delete: {
       parameters: {
         path: {
-          problemId: number;
+          id: number;
         };
       };
       responses: {
         /** @description Problem deleted successfully */
         204: {
-          content: never;
+          content: {
+            "application/json": {
+              payload?: {
+                [key: string]: unknown;
+              };
+            };
+          };
         };
       };
     };
   };
-  "/problems/{problemId}/answer": {
+  "/problems/{id}/answer": {
     /** Answer a problem */
     post: {
       parameters: {
         path: {
-          problemId: number;
+          id: number;
         };
       };
-      requestBody?: {
+      requestBody: {
         content: {
           "application/json": {
             answer?: string;
@@ -116,6 +142,9 @@ export interface paths {
           content: {
             "application/json": {
               correct?: boolean;
+              payload?: {
+                [key: string]: unknown;
+              };
             };
           };
         };
@@ -128,18 +157,26 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    Problem: {
+    FullProblem: {
       id?: number;
-      username?: string;
+      author?: string;
       /** @enum {string} */
       type?: "riddle" | "math";
       problem?: string;
       answer?: string;
     };
-    ProblemInput: {
+    Problem: {
+      id?: number;
+      author?: string;
       /** @enum {string} */
       type?: "riddle" | "math";
       problem?: string;
+    };
+    ProblemInput: {
+      /** @enum {string} */
+      type: "riddle" | "math";
+      problem: string;
+      answer?: string;
     };
   };
   responses: never;

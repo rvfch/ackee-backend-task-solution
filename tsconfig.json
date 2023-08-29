@@ -1,10 +1,10 @@
 {
-  "include": ["src/**/*", "dangerfile.ts"],
+  "include": ["src/**/*", "dangerfile.ts", "src/db/knexfile.ts"],
   "exclude": ["dangerfile.ts"],
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ES2022",
     "module": "CommonJS",
-    "lib": ["ES2019", "DOM"],
+    "lib": ["ES2022", "DOM"],
     "allowJs": true,
     "incremental": true,
     "checkJs": true,

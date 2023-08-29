@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Problems Service Test GET /problems should return a list of answered problems 1`] = `
+{
+  "author": "admin",
+  "created_at": Any<String>,
+  "id": 1,
+  "problem": "Test problem",
+  "type": "riddle",
+  "updated_at": Any<String>,
+}
+`;
+
+exports[`Problems Service Test GET /problems should return a list of problems 1`] = `
+{
+  "author": "admin",
+  "created_at": Any<String>,
+  "id": 1,
+  "problem": "Test problem",
+  "type": "riddle",
+  "updated_at": Any<String>,
+}
+`;
+
+exports[`Problems Service Test GET /problems should return a list of unanswered problems 1`] = `
+{
+  "author": "admin",
+  "created_at": Any<String>,
+  "id": 2,
+  "problem": "5+5",
+  "type": "math",
+  "updated_at": Any<String>,
+}
+`;
+
+exports[`Problems Service Test GET /problems/:id should return 404 problem not found 1`] = `"Problem 99999999 not found"`;
+
+exports[`Problems Service Test GET /problems/:id should return a one problem with id 1 1`] = `
+{
+  "problem": {
+    "author": "admin",
+    "created_at": Any<String>,
+    "id": 1,
+    "problem": "Test problem",
+    "type": "riddle",
+    "updated_at": Any<String>,
+  },
+  "statusCode": 200,
+}
+`;
+
+exports[`Problems Service Test GET /problems/:id should return validation error 1`] = `"Validation error"`;
+
+exports[`Problems Service Test PUT /problems/:id should throw 401 Unathorized 1`] = `"Insufficient access"`;
