@@ -1,9 +1,12 @@
 import { expressMiddleware } from 'node-healthz'
+import db from '../../db'
 
 export default expressMiddleware({
-  replaceMe: {
+  database: {
     crucial: true,
     check: () =>
-      Promise.reject(new Error('Replace me with some useful health check!')),
+      db.raw('select 1 as result').then(() => {
+        return true
+      }),
   },
 })
