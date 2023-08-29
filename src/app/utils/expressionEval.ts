@@ -1,52 +1,52 @@
 import { E_CODE, EvaluateError, ParseError, TokenizationError } from '../errors'
 
-enum TokenType {
+export enum TokenType {
   NUM = 'NUMBER',
   OP = 'OPERATOR',
   PAREN = 'PARENTHESIS',
 }
 
-enum Operators {
+export enum Operators {
   ADD = '+',
   SUBTRACT = '-',
   MULTIPLY = '*',
   DIVIDE = '/',
 }
 
-enum Parens {
+export enum Parens {
   OPEN = '(',
   CLOSE = ')',
 }
 
-interface Token {
+export interface Token {
   type: TokenType
   value: string
 }
 
-type Node = BinaryExpressionNode | PrefixExpressionNode | LiteralNode
+export type Node = BinaryExpressionNode | PrefixExpressionNode | LiteralNode
 
-type PrefixParseFunction = () => Node
-type InfixParseFunction = (leftExpression: Node) => Node
+export type PrefixParseFunction = () => Node
+export type InfixParseFunction = (leftExpression: Node) => Node
 
-interface BinaryExpressionNode {
+export interface BinaryExpressionNode {
   type: 'BinaryExpression'
   left: Node
   op: Operators
   right: Node
 }
 
-interface PrefixExpressionNode {
+export interface PrefixExpressionNode {
   type: 'PrefixExpression'
   op: Operators
   right: Node
 }
 
-interface LiteralNode {
+export interface LiteralNode {
   type: 'Literal'
   value: number
 }
 
-class Tokenizer {
+export class Tokenizer {
   private readonly expression: string
   private pos = 0
   private readonly operators = Object.values(Operators)
@@ -105,7 +105,7 @@ class Tokenizer {
       }
 
       throw new TokenizationError({
-        message: 'Tokenization error: ' + this.expression,
+        message: 'Tokenization error: ' + char,
         code: E_CODE.TOKENIZATION_ERROR.code,
       })
     }
@@ -113,16 +113,17 @@ class Tokenizer {
   }
 }
 
-class Parser {
+export class Parser {
   private readonly tokens: Token[]
   private pos = 0
   private readonly prefixParseFns: Record<string, PrefixParseFunction> = {}
   private readonly infixParseFns: Record<string, InfixParseFunction> = {}
-  private readonly precedences: Record<Operators, number> = {
+  private readonly precedences: Record<Operators | string, number> = {
     [Operators.ADD]: 1,
     [Operators.SUBTRACT]: 1,
     [Operators.MULTIPLY]: 2,
     [Operators.DIVIDE]: 2,
+    PREFIX: 3,
   }
 
   constructor(tokens: Token[]) {
@@ -140,7 +141,7 @@ class Parser {
     }
 
     this.prefixParseFns[Parens.OPEN] = this.parseGroupedExpression.bind(this)
-    this.prefixParseFns[TokenType.PAREN] = this.parseParenthesis.bind(this)
+    // this.prefixParseFns[TokenType.PAREN] = this.parseParenthesis.bind(this)
   }
 
   private peek(): Token {
@@ -157,10 +158,11 @@ class Parser {
 
   private parsePrefixExpression(): PrefixExpressionNode {
     const token = this.consume()
+    const rightExpression = this.parseExpression(this.precedences.PREFIX) // Use the higher precedence
     return {
       type: 'PrefixExpression',
       op: token.value as Operators,
-      right: this.parseExpression(),
+      right: rightExpression,
     }
   }
 
@@ -176,7 +178,13 @@ class Parser {
   }
 
   public parseExpression(precedence = 0): Node {
-    const prefixFn = this.prefixParseFns[this.peek().type]
+    const prefixFn =
+      this.prefixParseFns[
+        this.peek().type === TokenType.OP ||
+        this.peek().type === TokenType.PAREN
+          ? this.peek().value
+          : this.peek().type
+      ]
     if (!prefixFn) {
       throw new ParseError({
         message: `No prefix parse function for ${this.peek().type}`,
@@ -187,48 +195,32 @@ class Parser {
 
     while (
       this.pos < this.tokens.length &&
-      ((this.peek().type === TokenType.OP &&
-        this.precedences[this.peek().value as Operators] > precedence) ||
-        (this.peek().type === TokenType.PAREN &&
-          this.peek().value === Parens.OPEN))
+      this.peek().type === TokenType.OP &&
+      this.precedences[this.peek().value as Operators] > precedence
     ) {
-      if (
-        !this.infixParseFns[this.peek().value] &&
-        this.peek().value !== Parens.OPEN
-      ) {
-        throw new ParseError({
-          message: `No infix parse function for ${this.peek().value}`,
-          code: E_CODE.PARSE_ERROR.code,
-        })
-      }
-
-      if (this.peek().value === Parens.OPEN) {
-        left = this.prefixParseFns[this.peek().type]()
-      } else {
-        left = this.infixParseFns[this.peek().value as Operators](left)
-      }
+      left = this.infixParseFns[this.peek().value as Operators](left)
     }
 
     return left
   }
 
-  private parseParenthesis(): Node {
-    const token = this.peek()
+  // private parseParenthesis(): Node {
+  //   const token = this.peek()
 
-    if (token.value === Parens.OPEN) {
-      return this.parseGroupedExpression()
-    }
+  //   if (token.value === Parens.OPEN) {
+  //     return this.parseGroupedExpression()
+  //   }
 
-    throw new ParseError({
-      message: `Unhandled parenthesis: ${token.value}`,
-      code: E_CODE.PARSE_ERROR.code,
-    })
-  }
+  //   throw new ParseError({
+  //     message: `Unhandled parenthesis: ${token.value}`,
+  //     code: E_CODE.PARSE_ERROR.code,
+  //   })
+  // }
 
   private parseGroupedExpression(): Node {
     this.consume() // consume the opening parenthesis
     const expression = this.parseExpression()
-    if (this.peek().value !== Parens.CLOSE) {
+    if (!this.peek() || (this.peek() && this.peek().value !== Parens.CLOSE)) {
       throw new ParseError({
         message: 'Expected closing parenthesis',
         code: E_CODE.PARSE_ERROR.code,
@@ -239,7 +231,7 @@ class Parser {
   }
 }
 
-class Evaluator {
+export class Evaluator {
   public evaluate(node: Node): number {
     switch (node.type) {
       case 'BinaryExpression':
@@ -297,6 +289,7 @@ class Evaluator {
 }
 
 export const evaluate = (expression: string): number => {
+  expression = expression.trim().replace(/\s/g, '')
   const tokens = new Tokenizer(expression).tokenize()
   const ast = new Parser(tokens).parseExpression()
   return new Evaluator().evaluate(ast)
