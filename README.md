@@ -3,7 +3,7 @@
 # Ackee Backend Task Solution
 
 
-Assignment can be found here [here](https://github.com/AckeeCZ/cookbook-api-task)
+Assignment can be found [here](https://github.com/AckeeCZ/cookbook-api-task)
 
 </div>
 
